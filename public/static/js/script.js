@@ -141,6 +141,61 @@ function spin(r, winner) {
             // container.on("click", spin);
             $('#main-title').css('display', 'none');
             $('#good-luck').css('display', 'none');
+            
+            // Get the actual prize from the visual segment that was landed on
+            let actualPrize = prizes[picked];
+            console.log("Wheel landed on segment:", picked, "which shows:", actualPrize.label);
+            console.log("Segment details:", {
+                id: actualPrize.id,
+                label: actualPrize.label,
+                type: actualPrize.type,
+                probability: actualPrize.probability
+            });
+            
+            // Also log the rotation and picked calculation for debugging
+            console.log("Rotation calculation:", {
+                totalRotation: rotation,
+                segmentSize: 360 / prizes.length,
+                calculatedSegment: Math.ceil((rotation % 360) / (360 / prizes.length)),
+                picked: picked
+            });
+            
+            // Handle different winner types based on the actual visual segment
+            if (actualPrize.type === "win") {
+                // MUG winner
+                $('#winning-title').text("Winner!");
+                $('#winning-prize').text("MUG");
+                $('#winning-message').text("Congratulations! You won a MUG!");
+                $('#winning-card').css('display', 'block');
+                $('#retry-it').css('display', 'block');
+                $('#spin-wheel').css('display', 'none');
+                $('#try-again-message').css('display', 'none');
+                
+                // Update MUG counter
+                if (typeof window.updateMugCounter === 'function') {
+                    window.updateMugCounter();
+                }
+                
+                confetti.start();
+            } else if (actualPrize.type === "bonus") {
+                // BONUS SPIN winner
+                $('#winning-title').text("Bonus!");
+                $('#winning-prize').text("BONUS SPIN");
+                $('#winning-message').text("You got a BONUS SPIN! Click below to spin again!");
+                $('#winning-card').css('display', 'block');
+                $('#retry-it').css('display', 'block');
+                $('#spin-wheel').css('display', 'none');
+                $('#try-again-message').css('display', 'none');
+                confetti.start();
+            } else {
+                // TRY AGAIN
+                $('#winning-card').css('display', 'none');
+                $('#try-again-message').css('display', 'block');
+                $('#retry-it').css('display', 'block');
+                $('#spin-wheel').css('display', 'none');
+            }
+            
+            // Old logic for backward compatibility
             if (!winner.winner) {
                 $('#good-luck h1').html('Try it again.');
                 if (winner.try_again) {
@@ -200,3 +255,11 @@ function rotInitial(to) {
         return "rotate(" + i(t) + ")";
     };
 }
+
+// Make functions globally accessible
+window.spin = spin;
+window.introRotation = introRotation;
+window.spinToResult = spinToResult;
+window.playSound = playSound;
+window.rotTween = rotTween;
+window.rotInitial = rotInitial;
