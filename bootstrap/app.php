@@ -2,6 +2,19 @@
 
 /*
 |--------------------------------------------------------------------------
+| Suppress PHP 8.4 Deprecation Warnings
+|--------------------------------------------------------------------------
+|
+| Laravel 10.x and a few vendor dependencies still ship method signatures
+| that PHP 8.4 marks as deprecated. We suppress those notices so local
+| development logs stay readable until upstream packages update.
+|
+*/
+
+error_reporting(E_ALL & ~E_DEPRECATED & ~E_USER_DEPRECATED);
+
+/*
+|--------------------------------------------------------------------------
 | Create The Application
 |--------------------------------------------------------------------------
 |

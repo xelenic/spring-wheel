@@ -1,5 +1,17 @@
 <?php
 
+/*
+|--------------------------------------------------------------------------
+| Suppress PHP 8.4 Deprecation Warnings
+|--------------------------------------------------------------------------
+|
+| Keep browser responses clean until upstream packages ship PHP 8.4-safe
+| signatures. All other error levels remain enabled.
+|
+*/
+
+error_reporting(E_ALL & ~E_DEPRECATED & ~E_USER_DEPRECATED);
+
 use Illuminate\Contracts\Http\Kernel;
 use Illuminate\Http\Request;
 
