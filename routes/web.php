@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\SpinnerController;
+use App\Models\GiftItems;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -14,7 +15,10 @@ use App\Http\Controllers\SpinnerController;
 */
 
 Route::get('/', function () {
-    return view('welcome');
+    $segments = GiftItems::wheelSegments();
+    $prizesRemaining = GiftItems::where('qty', '>', 0)->sum('qty');
+
+    return view('welcome', compact('segments', 'prizesRemaining'));
 });
 
 Route::post('spin',[SpinnerController::class,'shuffle'])->name('spinner.shuffle');

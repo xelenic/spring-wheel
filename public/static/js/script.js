@@ -7,7 +7,7 @@ let padding = {top: 50, right: 100, bottom: 50, left: 100},
     oldrotation = 0,
     picked = 100000,
     oldpick = [],
-    color = d3.scale.category20();
+    sliceColors = ["#0d0d0d", "#e2231a"]; // alternating black / red, matches the brand rim
 
 // Loads the tick audio sound in to an audio object.
 let audio = new Audio(ROULETTE_MEDIA);
@@ -26,13 +26,9 @@ let container = svg.append("g")
 let vis = container
     .append("g");
 
-let myimage = vis.append('image')
-    .attr('xlink:href', WHEEL_IMG)
-    .attr('width', 800)
-    .attr('height', 800)
-    .attr('x', -400)
-    .attr('y', -400);
-
+// The rim, pointer and center hub are brand artwork with no per-segment
+// text baked in, so they stay a static overlay regardless of how many
+// prizes are on the wheel.
 let outwheel = svg.append('image')
         .attr('xlink:href', OUT_WHEEL_IMG)
         .attr('width', 800)
@@ -46,14 +42,28 @@ let pie = d3.layout.pie().value(function (d) {
 });
 
 // declare an arc generator function
-let arc = d3.svg.arc().outerRadius(r);
+let arc = d3.svg.arc().outerRadius(r).innerRadius(0);
 
-// select paths, use arc generator to draw
+// One <g class="slice"> per prize, each holding a colored wedge (drawn
+// straight from the prizes array, not a raster image) plus its label —
+// so the wheel always matches whatever prizes it was given.
 let arcs = vis.selectAll("g.slice")
     .data(pie)
     .enter()
     .append("g")
-    .append("text")
+    .attr("class", "slice");
+
+arcs.append("path")
+    .attr("fill", function (d, i) {
+        return sliceColors[i % sliceColors.length];
+    })
+    .attr("d", function (d) {
+        d.innerRadius = 0;
+        d.outerRadius = r;
+        return arc(d);
+    });
+
+arcs.append("text")
     .attr("x", -110)
     .attr("y", 5)
     .attr("class", "wheelText")
@@ -62,29 +72,10 @@ let arcs = vis.selectAll("g.slice")
     .text(function (d, i) {
         return prizes[i].label;
     })
-
     .attr("transform", function (d) {
-        d.innerRadius = 0;
-        d.outerRadius = r;
         d.angle = (d.startAngle + d.endAngle) / 2;
         return "rotate(" + (d.angle * 180 / Math.PI - 90) + ")translate(" + (d.outerRadius - 10) + ")";
     });
-// .attr("class", "slice");
-
-arcs.append("path")
-    .attr("fill-opacity", "0.0")
-    .attr("fill", function (d, i) {
-        return color(i);
-    })
-    .attr("d", function (d) {
-        return arc(d);
-    });
-
-// Debug highlights
-// d3.select(".slice:nth-child(" + (2) + ") path")
-//     .attr("fill-opacity","0.5")
-//     .attr("")
-//     .attr("fill", "#e9e9e9");
 
 
 function spinToResult(r) {
@@ -103,6 +94,23 @@ function introRotation(much) {
                 introRotation(!much)
             }, 4000);
         })
+}
+
+/**
+ * Work out how many degrees the wheel needs to turn, from wherever it's
+ * currently resting, so it ends up on segment `targetIndex` — using the
+ * exact same "picked = length - ceil((rotation % 360) / segmentSize)"
+ * relationship that spin()'s own landing calculation uses, just solved
+ * backwards. `extraTurns` just adds full spins for visual flourish.
+ */
+function rotationForIndex(targetIndex, extraTurns) {
+    extraTurns = extraTurns || 5;
+    let ps = 360 / prizes.length;
+    let k = prizes.length - targetIndex;
+    let targetMod = (k - 0.5) * ps; // midpoint of the segment's angular range
+    let current = ((rotation % 360) + 360) % 360;
+    let delta = ((targetMod - current) % 360 + 360) % 360;
+    return extraTurns * 360 + delta;
 }
 
 function spin(r, winner) {
@@ -132,60 +140,30 @@ function spin(r, winner) {
         .duration(9000)
         .attrTween("transform", rotTween)
         .each("end", function () {
-            d3.select(".slice:nth-child(" + (picked + 2) + ") path")
-                .attr("fill-opacity","0.5")
-                .attr("fill", "#e9e9e9");
+            vis.selectAll('g.slice')
+                .filter(function (d, i) {
+                    return i === picked;
+                })
+                .select('path')
+                .attr('fill-opacity', 0.6);
 
-            // d3.select("#question h1").text(data[picked].question);
             oldrotation = rotation;
-            // container.on("click", spin);
             $('#main-title').css('display', 'none');
             $('#good-luck').css('display', 'none');
-            
+
             // Get the actual prize from the visual segment that was landed on
             let actualPrize = prizes[picked];
             console.log("Wheel landed on segment:", picked, "which shows:", actualPrize.label);
-            console.log("Segment details:", {
-                id: actualPrize.id,
-                label: actualPrize.label,
-                type: actualPrize.type,
-                probability: actualPrize.probability
-            });
-            
-            // Also log the rotation and picked calculation for debugging
-            console.log("Rotation calculation:", {
-                totalRotation: rotation,
-                segmentSize: 360 / prizes.length,
-                calculatedSegment: Math.ceil((rotation % 360) / (360 / prizes.length)),
-                picked: picked
-            });
-            
-            // Handle different winner types based on the actual visual segment
+
             if (actualPrize.type === "win") {
-                // MUG winner
                 $('#winning-title').text("Winner!");
-                $('#winning-prize').text("MUG");
-                $('#winning-message').text("Congratulations! You won a MUG!");
+                $('#winning-prize').text(actualPrize.label);
+                $('#winning-message').text("Congratulations! You won a " + actualPrize.label + "!");
                 $('#winning-card').css('display', 'block');
                 $('#retry-it').css('display', 'block');
                 $('#spin-wheel').css('display', 'none');
                 $('#try-again-message').css('display', 'none');
-                
-                // Update MUG counter
-                if (typeof window.updateMugCounter === 'function') {
-                    window.updateMugCounter();
-                }
-                
-                confetti.start();
-            } else if (actualPrize.type === "bonus") {
-                // BONUS SPIN winner
-                $('#winning-title').text("Bonus!");
-                $('#winning-prize').text("BONUS SPIN");
-                $('#winning-message').text("You got a BONUS SPIN! Click below to spin again!");
-                $('#winning-card').css('display', 'block');
-                $('#retry-it').css('display', 'block');
-                $('#spin-wheel').css('display', 'none');
-                $('#try-again-message').css('display', 'none');
+
                 confetti.start();
             } else {
                 // TRY AGAIN
@@ -194,40 +172,6 @@ function spin(r, winner) {
                 $('#retry-it').css('display', 'block');
                 $('#spin-wheel').css('display', 'none');
             }
-            
-            // Old logic for backward compatibility
-            if (!winner.winner) {
-                $('#good-luck h1').html('Try it again.');
-                if (winner.try_again) {
-                    if (winner.retry_used) {
-                        $('#retry-used').css('display', 'block');
-                        $('#retry-message').css('display', 'none');
-                        $('#retry-it').css('display', 'block');
-                        $('#better-luck-message').css('display', 'block');
-                        $('#spin-wheel').css('display', 'none');
-                    } else {
-                        $('#id_email').val(winner.email);
-                        $('#id_code').val(winner.code);
-                        $('#retry-message').css('display', 'block');
-                        $('#spin-again').css('display', 'block');
-                    }
-                } else {
-                    $('#better-lucky-title').css('display', 'block');
-                    $('#better-luck-message').css('display', 'block');
-                    $('#retry-it').css('display', 'block');
-                    $('#spin-wheel').css('display', 'none');
-                }
-            } else {
-                $('#better-luck-message').css('display', 'block');
-                $('#retry-it').css('display', 'block');
-                $('#spin-wheel').css('display', 'none');
-                $('#winning-card').css('display', 'block');
-                $('#winning-email').html(winner.email);
-                $('#winning-prize').html(prizes[picked].label);
-                confetti.start();
-            }
-            //window.location.href = '/';
-            //return true;
         });
 }
 
@@ -263,3 +207,4 @@ window.spinToResult = spinToResult;
 window.playSound = playSound;
 window.rotTween = rotTween;
 window.rotInitial = rotInitial;
+window.rotationForIndex = rotationForIndex;

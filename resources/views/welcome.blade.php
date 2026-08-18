@@ -4,6 +4,7 @@
 <head>
     <title>Spin & Win</title>
     <meta charset="UTF-8"/>
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <link href="static/css/styles.css" rel="stylesheet" type="text/css"/>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
           integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z" crossorigin="anonymous">
@@ -62,7 +63,7 @@
                 Click the button below to spin the wheel!
             </h4>
             <h5 style="color: #ffd700; margin-bottom: 20px;">
-                🏆 MUGs Available Today: <span id="mug-counter">75</span>
+                🏆 Prizes Available Today: <span id="prizes-counter">{{ $prizesRemaining }}</span>
             </h5>
             <button class="btn-spin-action" id="spin-wheel" type="button">
                 SPIN THE WHEEL!
@@ -157,74 +158,18 @@
 
 <!-- Load our wheel script and make functions globally accessible -->
 <script>
-    // Make sure these variables are globally accessible
-    // Updated with cleaner, more readable text labels
-    window.prizes = [
-        {
-            label: "TRY AGAIN",        // Top segment (Black)
-            id: 1,
-            type: "try_again",
-            probability: 0.7 // 70% chance
-        },
-        {
-            label: "BONUS SPIN",       // Second segment (Red)
-            id: 2,
-            type: "bonus",
-            probability: 0.2 // 20% chance
-        },
-        {
-            label: "TRY AGAIN",        // Third segment (Black)
-            id: 3,
-            type: "try_again",
-            probability: 0.7 // 70% chance
-        },
-        {
-            label: "MUG",              // Fourth segment (Red)
-            id: 4,
-            type: "win",               // MUG prize
-            probability: 0.1 // 10% chance
-        },
-        {
-            label: "TRY AGAIN",        // Fifth segment (Black)
-            id: 5,
-            type: "try_again",
-            probability: 0.7 // 70% chance
-        },
-        {
-            label: "BONUS SPIN",       // Sixth segment (Red)
-            id: 6,
-            type: "bonus",
-            probability: 0.2 // 20% chance
-        }
-    ];
-    
+    // The wheel's segments come straight from the server (GiftItems::wheelSegments()),
+    // so whatever is configured in the admin panel's Gift Items page is exactly what's
+    // on the wheel and what the /spin endpoint can land on.
+    window.prizes = @json(collect($segments)->map(fn ($segment) => [
+        'label' => $segment['label'],
+        'type'  => $segment['type'],
+    ]));
+
     // Global media variables
     window.WHEEL_IMG = "static/img/wheel.png";
     window.OUT_WHEEL_IMG = "static/img/outwheel.png";
     window.ROULETTE_MEDIA = "static/media/roulette.mp3";
-    
-    // Daily MUG counter (stored in localStorage for demo purposes)
-    // In production, this would come from a database
-    let dailyMugCount = localStorage.getItem('dailyMugCount') || 75;
-    let lastResetDate = localStorage.getItem('lastResetDate') || new Date().toDateString();
-    
-    // Check if it's a new day and reset the counter
-    if (lastResetDate !== new Date().toDateString()) {
-        dailyMugCount = 75;
-        localStorage.setItem('lastResetDate', new Date().toDateString());
-    }
-    
-    // Update the display
-    document.getElementById('mug-counter').textContent = dailyMugCount;
-    
-    // Function to update MUG counter
-    window.updateMugCounter = function() {
-        if (dailyMugCount > 0) {
-            dailyMugCount--;
-            localStorage.setItem('dailyMugCount', dailyMugCount);
-            document.getElementById('mug-counter').textContent = dailyMugCount;
-        }
-    };
 </script>
 
 <script src="static/js/script.js"></script>
@@ -292,70 +237,58 @@
 
     $('#spin-wheel').on('click', function () {
         console.log("Spin button clicked!");
-        
-        // Check if MUGs are still available
-        let currentMugCount = parseInt(document.getElementById('mug-counter').textContent);
-        if (currentMugCount <= 0) {
-            alert("Sorry! All MUGs for today have been won. Please try again tomorrow!");
-            return;
-        }
-        
+
         // Check if the spin function is available
-        if (typeof spin !== 'function') {
+        if (typeof spin !== 'function' || typeof window.rotationForIndex !== 'function') {
             console.error("Spin function not found! Trying to reload scripts...");
-            // Try to reload the script
             location.reload();
             return;
         }
-        
-        // Hide the form and show good luck message
+
+        // Hide the form and show good luck message, disable the button so a
+        // slow response can't be clicked twice.
+        $('#spin-wheel').prop('disabled', true);
         $('#main-title').css('display', 'none');
         $('#main-message').css('display', 'none');
         $('#spin-wheel').css('display', 'none');
-        
+        $('#good-luck').css('display', 'block');
+
         // Stop any existing confetti
         if (typeof confetti !== 'undefined' && confetti.stop) {
             confetti.stop();
         }
-        
-        console.log("Starting wheel spin...");
-        
-        // Generate random rotation for demo
-        let randomRotation = Math.floor(Math.random() * 360) + 720; // At least 2 full rotations
-        
-        // Create a simple winner object - the actual prize will be determined by where the wheel lands
-        let demoWinner = {
-            winner: false, // Will be determined by the actual segment landed on
-            winner_type: "unknown", // Will be determined by the actual segment landed on
-            message: "Spinning...",
-            email: "Demo User",
-            code: "1234567890"
-        };
-        
-        console.log("Spinning with rotation:", randomRotation);
-        
-        try {
-            // Test if we can call the spin function
-            if (typeof window.spin === 'function') {
-                console.log("Using window.spin function");
-                window.spin(randomRotation, demoWinner);
-            } else if (typeof spin === 'function') {
-                console.log("Using local spin function");
-                spin(randomRotation, demoWinner);
-            } else {
-                throw new Error("Spin function not accessible");
-            }
-            
-            $('#good-luck').css('display', 'block');
-        } catch (error) {
-            console.error("Error during spin:", error);
-            // Show error message to user
-            $('#good-luck').html('<h3 style="color:red;">Error spinning wheel. Please refresh the page.</h3>');
-            $('#good-luck').css('display', 'block');
-            
-            // Show the spin button again for debugging
+
+        // Ask the server which real gift (or "try again") this spin wins —
+        // it decides from the actual Gift Items inventory and reserves the
+        // prize server-side, then tells us which wheel segment to land on.
+        $.ajax({
+            url: '{{ url('spin') }}',
+            method: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+            },
+            dataType: 'json'
+        }).done(function (data) {
+            console.log("Spin result from server:", data);
+
+            let targetRotation = window.rotationForIndex(data.prize_index);
+            let winner = {
+                winner: data.winner,
+                winner_type: data.type,
+                message: data.label
+            };
+
+            window.spin(targetRotation, winner);
+        }).fail(function (xhr) {
+            console.error("Spin request failed:", xhr.responseText);
+            $('#good-luck').html('<h3 style="color:red;">Something went wrong starting the spin. Please refresh and try again.</h3>');
+
+            // Let them try again rather than getting stuck.
+            $('#spin-wheel').prop('disabled', false);
+            $('#main-title').css('display', 'block');
+            $('#main-message').css('display', 'block');
             $('#spin-wheel').css('display', 'block');
-        }
+        });
     });
 
     $('#retry-it').on('click', function () {

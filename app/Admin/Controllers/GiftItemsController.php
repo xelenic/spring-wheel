@@ -18,9 +18,9 @@ class GiftItemsController extends AdminController
 
         $grid->column('id', 'ID')->sortable();
         $grid->column('gift_items', 'Gift Name')->sortable();
-        $grid->column('qty', 'Total Qty')->sortable();
-        $grid->column('per_day', 'Per Day Limit')->sortable();
-        $grid->column('remaining_qty', 'Remaining Qty')->sortable();
+        $grid->column('qty', 'Available Qty')->sortable();
+        $grid->column('per_day', 'Odds Weight')->sortable();
+        $grid->column('remaining_qty', 'Given Away')->sortable();
         $grid->column('created_at', 'Added At')->sortable();
 
         $grid->filter(function ($filter) {
@@ -37,9 +37,9 @@ class GiftItemsController extends AdminController
 
         $show->field('id', 'ID');
         $show->field('gift_items', 'Gift Name');
-        $show->field('qty', 'Total Qty');
-        $show->field('per_day', 'Per Day Limit');
-        $show->field('remaining_qty', 'Remaining Qty');
+        $show->field('qty', 'Available Qty');
+        $show->field('per_day', 'Odds Weight');
+        $show->field('remaining_qty', 'Given Away');
         $show->field('created_at', 'Added At');
         $show->field('updated_at', 'Updated At');
 
@@ -51,14 +51,18 @@ class GiftItemsController extends AdminController
         $form = new Form(new GiftItems());
 
         $form->text('gift_items', 'Gift Name')->rules('required');
-        $form->number('qty', 'Total Qty')->rules('required|integer|min:0')->default(0);
-        $form->number('per_day', 'Per Day Limit')->rules('required|integer|min:0')->default(0);
-
-        if ($form->isEditing()) {
-            $form->number('remaining_qty', 'Remaining Qty')
-                ->rules('required|integer|min:0')
-                ->help('Stock left to give away. Starts equal to Total Qty when the gift is created.');
-        }
+        $form->number('qty', 'Available Qty')
+            ->rules('required|integer|min:0')
+            ->default(0)
+            ->help('Stock left to give away. Decreases by 1 each time this gift is won; set to 0 to pull it out of the draw without deleting it.');
+        $form->number('per_day', 'Odds Weight')
+            ->rules('required|integer|min:0')
+            ->default(0)
+            ->help('Used to weight this gift against the others when a spin picks a winner. Higher = more likely to be picked.');
+        $form->number('remaining_qty', 'Given Away')
+            ->rules('required|integer|min:0')
+            ->default(0)
+            ->help('Running count of how many of this gift have been won so far. Usually left alone — the spin endpoint increments it automatically.');
 
         return $form;
     }
