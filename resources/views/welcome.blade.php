@@ -2,7 +2,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <title>Spring Wheel</title>
+    <title>Spin & Win</title>
     <meta charset="UTF-8"/>
     <link href="static/css/styles.css" rel="stylesheet" type="text/css"/>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
@@ -42,7 +42,7 @@
         <div id="chart"></div>
         <!-- Fallback wheel image if D3.js doesn't load -->
         <div id="fallback-wheel" style="display: none; text-align: center;">
-            <img src="static/img/wheel.png" alt="Spring Wheel">
+            <img src="static/img/wheel.png" alt="Prize wheel">
         </div>
     </div>
 
@@ -51,13 +51,13 @@
         <!-- Logo -->
         <div class="brand-logo">
             <a href="#">
-                <img alt="Spring Wheel logo" src="static/img/logo.png">
+                <img alt="Brand logo" src="static/img/logo.png">
             </a>
         </div>
 
         <!-- Idle / call to action -->
         <div class="spin-cta">
-            <h1 style="color:white;" id="main-title">SPIN THE SPRING WHEEL!</h1>
+            <h1 style="color:white;" id="main-title">SPIN THE WHEEL!</h1>
             <h4 style="color: white;" id="main-message">
                 Click the button below to spin the wheel!
             </h4>
