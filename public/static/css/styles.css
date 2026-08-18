@@ -92,4 +92,146 @@
   fill: white;
 }
 
+/* ---------------------------------------------------------------- */
+/* Two-column spin layout: wheel on the left, brand/status on the right */
+/* ---------------------------------------------------------------- */
+
+.spin-layout {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 100px;
+  flex-wrap: wrap;
+  width: 100%;
+  max-width: 1500px;
+  margin: 0 auto;
+  padding: 40px 20px;
+  box-sizing: border-box;
+}
+
+.wheel-panel {
+  flex: 0 0 auto;
+  display: flex;
+  justify-content: center;
+}
+
+.wheel-panel #chart {
+  width: 640px;
+  height: 640px;
+}
+
+.wheel-panel #fallback-wheel img {
+  max-width: 640px;
+  width: 100%;
+  height: auto;
+}
+
+.info-panel {
+  flex: 0 0 auto;
+  width: 460px;
+  max-width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.info-panel .brand-logo {
+  margin-bottom: 36px;
+}
+
+.info-panel .brand-logo img {
+  max-width: 340px;
+  width: 100%;
+  height: auto;
+}
+
+.spin-cta h1 {
+  font-size: 40px;
+}
+
+.spin-cta h4 {
+  font-size: 22px;
+}
+
+.spin-cta h5 {
+  font-size: 20px;
+}
+
+.btn-spin-action {
+  display: block;
+  width: 100%;
+  background: #1a73e8;
+  border: none;
+  color: #fff;
+  font-size: 24px;
+  font-weight: 600;
+  padding: 18px 26px;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background .2s ease;
+}
+
+.btn-spin-action:hover {
+  background: #1560c4;
+  color: #fff;
+}
+
+.result-card {
+  width: 100%;
+  background: #6a1015;
+  border-radius: 16px;
+  padding: 36px 32px;
+  color: #fff;
+  margin-bottom: 26px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, .35);
+  box-sizing: border-box;
+}
+
+.result-card h1 {
+  font-size: 36px;
+  margin-bottom: 8px;
+}
+
+.result-card h2 {
+  font-size: 30px !important;
+  margin-bottom: 8px;
+}
+
+.result-card h3 {
+  font-size: 19px;
+  opacity: .85;
+  margin-bottom: 0;
+  color: #fff;
+}
+
+.try-again-card {
+  width: 100%;
+  background: rgba(0, 0, 0, .35);
+  border-radius: 16px;
+  padding: 36px 32px;
+  margin-bottom: 26px;
+  box-sizing: border-box;
+}
+
+.try-again-card h1 {
+  font-size: 34px;
+}
+
+.try-again-card h4 {
+  font-size: 20px;
+}
+
+@media (max-width: 1180px) {
+  .spin-layout {
+    flex-direction: column;
+  }
+
+  .wheel-panel #chart {
+    width: 90vw;
+    height: 90vw;
+    max-width: 520px;
+    max-height: 520px;
+  }
+}
 

@@ -13,5 +13,6 @@ Route::group([
 
     $router->get('/', 'HomeController@index')->name('home');
     $router->resource('spin-history', SpinHistoryController::class);
+    $router->resource('gift-items', GiftItemsController::class);
 
 });

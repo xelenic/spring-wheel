@@ -28,99 +28,86 @@
 
     <style>
         body {
-            background-color: #002535;
+            background-color: #2a1012;
         }
     </style>
 </head>
 
-<body ondblclick="openFullscreen()" class="text-center" style="background: url('{{url('static/img/Background.jpg')}}');background-size: cover">
+<body ondblclick="openFullscreen()" style="background: url('{{url('static/img/Background.jpg')}}');background-size: cover;background-position:center;">
 
-<div class="container h-100 d-flex flex-column justify-content-center align-items-center" style="padding-top: 70px;">
-    <!-- Logo -->
-    <div class="mb-4">
-        <a href="#">
-            <img alt="Spring Wheel logo" class="mx-auto d-block img-fluid" src="static/img/logo.png" style="max-width: 200px;">
-        </a>
-    </div>
-    
-    <!-- Title -->
-    <div class="mb-5">
-        <h1 class="h1 font-weight-normal" style="color:white;" id="main-title">SPIN THE SPRING WHEEL!</h1>
-        <h4 class="h4 font-weight-normal" style="color: white;" id="main-message">
-            Click the button below to spin the wheel!
-        </h4>
-        <div class="mt-3">
-            <h5 class="h5 font-weight-normal" style="color: #ffd700;">
-                🏆 MUGs Available Today: <span id="mug-counter">75</span>
-            </h5>
-        </div>
-    </div>
+<div class="spin-layout">
 
-    <!-- Wheel -->
-    <div class="mb-4">
+    <!-- Wheel (left) -->
+    <div class="wheel-panel">
         <div id="chart"></div>
         <!-- Fallback wheel image if D3.js doesn't load -->
         <div id="fallback-wheel" style="display: none; text-align: center;">
-            <img src="static/img/wheel.png" alt="Spring Wheel" style="max-width: 600px; height: auto;">
+            <img src="static/img/wheel.png" alt="Spring Wheel">
         </div>
     </div>
 
-    <!-- Spin Button -->
-    <div class="mb-4">
-        <button class="btn btn-lg btn-primary" id="spin-wheel" type="button" style="font-size: 24px; padding: 15px 40px;">
-            SPIN THE WHEEL!
+    <!-- Brand + status (right) -->
+    <div class="info-panel">
+        <!-- Logo -->
+        <div class="brand-logo">
+            <a href="#">
+                <img alt="Spring Wheel logo" src="static/img/logo.png">
+            </a>
+        </div>
+
+        <!-- Idle / call to action -->
+        <div class="spin-cta">
+            <h1 style="color:white;" id="main-title">SPIN THE SPRING WHEEL!</h1>
+            <h4 style="color: white;" id="main-message">
+                Click the button below to spin the wheel!
+            </h4>
+            <h5 style="color: #ffd700; margin-bottom: 20px;">
+                🏆 MUGs Available Today: <span id="mug-counter">75</span>
+            </h5>
+            <button class="btn-spin-action" id="spin-wheel" type="button">
+                SPIN THE WHEEL!
+            </button>
+        </div>
+
+        <!-- Spinning -->
+        <div id="good-luck" style="display:none">
+            <h3 style="color:white;">Good Luck!</h3>
+        </div>
+
+        <!-- Try again -->
+        <div id="try-again-message" class="try-again-card" style="display:none">
+            <h1 style="color:white;">TRY AGAIN!</h1>
+            <h4 style="color: white;">
+                Better luck next time! Click the button below to try again!
+            </h4>
+        </div>
+
+        <!-- Winner -->
+        <div id="winning-card" class="result-card" style="display:none">
+            <h1 id="winning-title">Winner!</h1>
+            <h2><span id="winning-prize"></span></h2>
+            <h3 id="winning-message"></h3>
+        </div>
+
+        <button class="btn-spin-action" id="retry-it" type="button" style="display:none;">
+            Spin Again
+        </button>
+
+        <h4 style="color: white; display: none;" id="retry-used">
+            <br>Your retry was already used...</h4>
+
+        <div id="retry-message" style="display:none">
+            <h1 class="blinking" style="color: white; text-transform:uppercase;">
+                Try again!</h1>
+            <h4 style="color: white;">
+                You have just won a free spin! Please click on the button below to try again!</h4>
+        </div>
+
+        <button class="btn-spin-action" id="spin-again" type="button" onclick="location.reload()"
+                style="display:none;">
+            Done
         </button>
     </div>
-
-    <!-- Messages -->
-    <div id="good-luck" style="display:none">
-        <h3 style="color:white;">Good Luck!</h3>
-    </div>
-
-    <div id="try-again-message" style="display:none">
-        <h1 class="h1 mt-2 mb-5 font-weight-normal" style="color:white;">
-            TRY AGAIN!
-        </h1>
-        <h4 class="h4 mb-5 font-weight-normal" style="color: white;">
-            Better luck next time! Click the button below to try again!
-        </h4>
-    </div>
-
-    <div id="winning-card" style="display:none">
-        <h1 class="blinking h1 mt-2 mb-5 font-weight-normal"
-            style="color: white; text-transform:uppercase;">
-            Congratulations!!</h1>
-        <div class="card mb-4">
-            <div class="card-body" style="background: #0048a5;color: white;">
-                <p style="color: #ffffff;" class="col-form-label col-form-label-lg">
-                    <h1 id="winning-title">Winner!</h1>
-                    <h2 style="font-size: 50px;"> <span id="winning-prize"></span></h2>
-                    <h3 id="winning-message" style="color: #ffffff;"></h3>
-                </p>
-            </div>
-        </div>
-    </div>
-
-    <button class="btn btn-lg btn-primary" id="retry-it" type="button"
-            style="display:none; font-size: 20px; padding: 12px 30px;">
-       Spin Again
-    </button>
-
-    <h4 class="h4 mb-5 font-weight-normal" style="color: white;display: none;" id="retry-used">
-        <br>Your retry was already used...</h4>
-
-    <div id="retry-message" style="display:none">
-        <h1 class="blinking h1 mt-2 mb-5 font-weight-normal"
-            style="color: white; text-transform:uppercase;">
-            Try again!</h1>
-        <h4 class="h4 mb-5 font-weight-normal" style="color: white;">
-            You have just won a free spin! Please click on the button below to try again!</h4>
-    </div>
-
-    <button class="btn btn-lg btn-primary" id="spin-again" type="button" onclick="location.reload()"
-            style="display:none; font-size: 20px; padding: 12px 30px;">
-        Done
-    </button>
 </div>
 
 <script charset="utf-8" src="https://d3js.org/d3.v3.min.js"></script>
