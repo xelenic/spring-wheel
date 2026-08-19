@@ -62,11 +62,8 @@
             <h4 style="color: white;" id="main-message">
                 Click the button below to spin the wheel!
             </h4>
-            <h5 style="color: #ffd700; margin-bottom: 20px;">
-                🏆 Prizes Available Today: <span id="prizes-counter">{{ $prizesRemaining }}</span>
-            </h5>
-            <button class="btn-spin-action" id="spin-wheel" type="button">
-                SPIN THE WHEEL!
+            <button class="btn-spin-image" id="spin-wheel" type="button">
+                <img src="{{ url('Digital/Button.png') }}" alt="Spin the wheel">
             </button>
         </div>
 

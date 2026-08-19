@@ -16,9 +16,8 @@ use App\Models\GiftItems;
 
 Route::get('/', function () {
     $segments = GiftItems::wheelSegments();
-    $prizesRemaining = GiftItems::where('qty', '>', 0)->sum('qty');
 
-    return view('welcome', compact('segments', 'prizesRemaining'));
+    return view('welcome', compact('segments'));
 });
 
 Route::post('spin',[SpinnerController::class,'shuffle'])->name('spinner.shuffle');

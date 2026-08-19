@@ -177,6 +177,33 @@
   color: #fff;
 }
 
+.btn-spin-image {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  transition: transform .15s ease;
+}
+
+.btn-spin-image img {
+  width: 100%;
+  max-width: 210px;
+  height: auto;
+  display: block;
+  margin-top: 10%;
+}
+
+.btn-spin-image:hover {
+  transform: scale(1.05);
+}
+
+.btn-spin-image:active {
+  transform: scale(0.97);
+}
+
 .result-card {
   width: 100%;
   background: #6a1015;
